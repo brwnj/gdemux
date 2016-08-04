@@ -172,18 +172,36 @@ class FastqMultx(object):
 @click.command(context_settings=dict(help_option_names=["-h", "--help"]))
 @click.argument("r1", type=click.Path(exists=True, dir_okay=False))
 @click.argument("table", type=click.Path(exists=True, dir_okay=False))
-@click.option("--i1", type=click.Path(exists=True, dir_okay=False), help=("index read FASTQ; if the file is located in the same directory as 'R1' and contains '_I1' in the read name, specifying is optional"))
-@click.option("--r2", type=click.Path(exists=True, dir_okay=False), help=("second read (R2) FASTQ; if the file is located in the same directory as 'R1' and contains '_R2' in the read name, specifying is optional"))
-@click.option("-a", "--output-action", type=click.Choice(["undetermined", "groupid"]), default="undetermined", show_default=True, help=("affects the final output file; 'undetermined' write Undetermined I1, R1, and R2 within group named directories, whereas 'groupid' outputs files prefixed with individual group IDs"))
-@click.option("-o", "--out", default=".", show_default=True, help="output directory for demultiplexed files")
-@click.option("--header/--no-header", default=True, help=("metadata table header: when there's no header, sample-id and group-id should be 0-based column numbers"))
-@click.option("--sample-id", default="sampleid", show_default=True, help="metadata header label for sample id column or 0-based column number")
-@click.option("--group-id", default="groupid", show_default=True, help="metadata header label for group id column or 0-based column number")
-@click.option("--barcode", default="barcode", show_default=True, help="metadata header label for barcode column or 0-based column number")
-@click.option("-m", "--barcode-mismatches", type=int, default=1, show_default=True, help="allowed mismatches as long as barcodes are unique")
-@click.option("-d", "--distance", type=int, default=2, show_default=True, help=("helps in determining uniqueness when allowing mismatches; minimum distance between best and next best match"))
-@click.option("-q", "--quality", type=int, default=0, show_default=True, help="require a minimum phred quality to accept a barcode base")
-@click.option("--stats-file", default=os.devnull, help="file to save fastq-multx stdout which contains per sample read counts")
+@click.option("--i1", type=click.Path(exists=True, dir_okay=False),
+              help=("index read FASTQ; if the file is located in the same directory as 'R1' and "
+                    "contains '_I1' in the read name, specifying is optional"))
+@click.option("--r2", type=click.Path(exists=True, dir_okay=False),
+              help=("second read (R2) FASTQ; if the file is located in the same directory as 'R1' "
+                    "and contains '_R2' in the read name, specifying is optional"))
+@click.option("-a", "--output-action", type=click.Choice(["undetermined", "groupid"]),
+              default="undetermined", show_default=True,
+              help=("affects the final output file; 'undetermined' write Undetermined I1, R1, and "
+                    "R2 within group named directories, whereas 'groupid' outputs files prefixed "
+                    "with individual group IDs"))
+@click.option("-o", "--out", default=".", show_default=True,
+              help="output directory for demultiplexed files")
+@click.option("--header/--no-header", default=True, help=("metadata table header: when there's no "
+              "header, sample-id and group-id should be 0-based column numbers"))
+@click.option("--sample-id", default="sampleid", show_default=True,
+              help="metadata header label for sample id column or 0-based column number")
+@click.option("--group-id", default="groupid", show_default=True,
+              help="metadata header label for group id column or 0-based column number")
+@click.option("--barcode", default="barcode", show_default=True,
+              help="metadata header label for barcode column or 0-based column number")
+@click.option("-m", "--barcode-mismatches", type=int, default=1, show_default=True,
+              help="allowed mismatches as long as barcodes are unique")
+@click.option("-d", "--distance", type=int, default=2, show_default=True,
+              help=("helps in determining uniqueness when allowing mismatches; minimum distance "
+                    "between best and next best match"))
+@click.option("-q", "--quality", type=int, default=0, show_default=True,
+              help="require a minimum phred quality to accept a barcode base")
+@click.option("--stats-file", default=os.devnull,
+              help="file to save fastq-multx stdout which contains per sample read counts")
 def group_demux(r1, table, i1, r2, output_action, out, header, sample_id, group_id, barcode,
                 barcode_mismatches, distance, quality, stats_file):
     """Demultiplex FASTQs using `fastq-multx` (`conda install -c bioconda fastq-multx`) into grouped
