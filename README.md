@@ -8,7 +8,7 @@ validated by total count against the individual sample sum.
 This effectively subsets 'Undetermined' into smaller
 groups of 'Undetermined' files.
 
-## Group Named Output Files
+# Group Named Output Files
 
 Setting `--output-action` to "groupid" and running:
 
@@ -33,7 +33,7 @@ out
 └── group3_R2.fastq
 ```
 
-## Undetermined Subsets as Output Files
+# Undetermined Subsets as Output Files
 
 Setting `--output-action` to "undetermined" and running:
 
@@ -61,7 +61,7 @@ out
     └── Undetermined_R2.fastq
 ```
 
-## Example Metadata
+# Example Metadata
 
 | groupid | sampleid | barcode      |
 |---------|----------|--------------|
