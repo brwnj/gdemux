@@ -1,4 +1,3 @@
-import argparse
 import click
 import contextlib
 import errno
