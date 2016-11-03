@@ -163,9 +163,9 @@ class FastqMultx(object):
         # validate that we have the right files here
         for (out_r1, out_r2) in self.output_files:
             if not os.path.exists(out_r1):
-                logger.error("Expected file %s was not found!" % out_r1)
+                logging.error("Expected file %s was not found!" % out_r1)
             if not os.path.exists(out_r2):
-                logger.error("Expected file %s was not found!" % out_r2)
+                logging.error("Expected file %s was not found!" % out_r2)
 
 
 @click.command(context_settings=dict(help_option_names=["-h", "--help"]))
