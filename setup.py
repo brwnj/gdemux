@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name='gdemux',
-    version='0.0.0',
+    version='0.0.1',
     url='http://github.com/brwnj/gdemux',
     license='Unlicense',
     author='Joe Brown',
