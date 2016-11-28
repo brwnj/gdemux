@@ -12,11 +12,10 @@ import tempfile
 
 
 class Metadata(object):
-    def __init__(self, table, sample_id, group_id, barcode, header=True):
+    def __init__(self, table, group_id, barcode, header=True):
         """
         Args:
             table (str): file path to metadata table; csv or tsv
-            sample_id (str or int): sample id column header label or 0-based column
             group_id (str or int): group id column header label or 0-based column
             barcode (str or int): barcode column header label or 0-based column
             header (boolean): header presence
@@ -25,7 +24,6 @@ class Metadata(object):
             Exits if metadata table does not validate, e.g. sample_id header label was not found.
         """
         self.table = os.path.abspath(table)
-        self.sample_id = sample_id
         self.group_id = group_id
         self.barcode = barcode
         self.dataframe = self.validate_table(header)
@@ -44,10 +42,6 @@ class Metadata(object):
             pandas.DataFrame
         """
         df = pd.read_table(self.table, header=None if not header else 0, sep=None, engine="python")
-        if self.sample_id not in df.columns:
-            logging.critical("--sample-id '%s' was not found in the header of %s %s" %
-                            (self.sample_id, self.table, list(df.columns)))
-            sys.exit(1)
         if self.group_id not in df.columns:
             logging.critical("--group-id '%s' was not found in the header of %s %s" %
                             (self.group_id, self.table, list(df.columns)))
@@ -59,7 +53,7 @@ class Metadata(object):
         return df
 
     def barcodes(self, out_file):
-        """Generates barcode TSV of <sample> <sequence> from the metadata table.
+        """Generates barcode TSV of <sequence> <sequence> from the metadata table.
 
         Args:
             out_file (str): file path to barcodes TSV file
@@ -67,7 +61,7 @@ class Metadata(object):
         Returns:
             str
         """
-        self.dataframe.to_csv(out_file, columns=[self.sample_id, self.barcode], header=False,
+        self.dataframe.to_csv(out_file, columns=[self.barcode, self.barcode], header=False,
                               index=False, sep="\t")
         return os.path.abspath(out_file)
 
@@ -86,7 +80,7 @@ class FastqMultx(object):
             distance (Optional[int]): minimum distance between best and next best match
             quality (Optional[int]): require a minimum phred quality to accept a barcode base
         """
-        self.r1 = os.path.abspath(r1)
+        self.r1 = os.path.expanduser(r1)
         self.barcodes = barcodes
 
         if not r2 and not i1:
@@ -132,7 +126,7 @@ class FastqMultx(object):
                 # sample name\tbarcode
                 toks = line.strip().split("\t")
                 if len(toks) < 2:
-                    raise OSError(errno.ENOENT, "Invalid barcodes file; expects <sample>\\t<seq>", r1)
+                    raise OSError(errno.ENOENT, "Invalid barcodes file; expects <ID>\\t<seq>", r1)
                 out_files.append([os.path.join(self.out_dir, "%s_R1.fastq" % toks[0]),
                                   os.path.join(self.out_dir, "%s_R2.fastq" % toks[0])])
         return out_files
@@ -185,9 +179,7 @@ class FastqMultx(object):
 @click.option("-o", "--out", default=".", show_default=True,
               help="output directory for demultiplexed files")
 @click.option("--header/--no-header", default=True, help=("metadata table header: when there's no "
-              "header, sample-id and group-id should be 0-based column numbers"))
-@click.option("--sample-id", default="sampleid", show_default=True,
-              help="metadata header label for sample id column or 0-based column number")
+              "header, group-id should be 0-based column number"))
 @click.option("--group-id", default="groupid", show_default=True,
               help="metadata header label for group id column or 0-based column number")
 @click.option("--barcode", default="barcode", show_default=True,
@@ -200,31 +192,30 @@ class FastqMultx(object):
 @click.option("-q", "--quality", type=int, default=0, show_default=True,
               help="require a minimum phred quality to accept a barcode base")
 @click.option("--stats-file", default=os.devnull,
-              help="file to save fastq-multx stdout which contains per sample read counts")
+              help="file to save fastq-multx stdout which contains per barcode read counts")
 def group_demux(r1, table, i1, r2, output_action, out, header, sample_id, group_id, barcode,
                 barcode_mismatches, distance, quality, stats_file):
     """Demultiplex FASTQs using `fastq-multx` (`conda install -c bioconda fastq-multx`) into grouped
     FASTQs rather than individual samples. Effectively, this subsets 'Undetermined' into smaller
     groups of 'Undetermined' files.
 
-    Reads `R1` and the `metadata` sheet -- sample and group ID mapping to barcode sequences -- and
-    depends on the user to define `--sample-id`, `--group-id`, and `--barcode` to match the header
+    Reads `R1` and the `metadata` sheet -- group ID mapping to barcode sequences -- and
+    depends on the user to define `--group-id`, and `--barcode` to match the header
     or column number.
     """
     logging.basicConfig(level=logging.INFO, datefmt="%Y-%m-%d %H:%M",
                         format="[%(asctime)s %(levelname)s] %(message)s")
     if not header:
         try:
-            sample_id = int(sample_id)
             group_id = int(group_id)
             barcode = int(barcode)
         except ValueError:
-            logging.warning(("When not using a header, the sample, group, and barcode columns "
+            logging.warning(("When not using a header, the group and barcode columns "
                              "should be integers"))
             sys.exit(1)
     if not os.path.exists(out):
         os.makedirs(out)
-    metadata = Metadata(table, sample_id, group_id, barcode, header)
+    metadata = Metadata(table, group_id, barcode, header)
     group_files = {}
     with temp_dir() as td:
         barcodes = metadata.barcodes(os.path.join(td, "barcodes.tsv"))
@@ -297,7 +288,7 @@ def read_count(fastq):
     return int(subprocess.check_output("awk '{n++}END{print n/4}' '%s'" % fastq, shell=True).decode())
 
 
-def validate_group_fastqs(group_files, demultiplexing_stats, metadata_df, sample_id, group_id):
+def validate_group_fastqs(group_files, demultiplexing_stats, metadata_df, barcode, group_id):
     """Validate the counts of the group total versus the individual sample files of the groups.
     Columns 'Id' and 'Count' come from `fastq-multx` STDOUT contained in demultiplexing_stats.
 
@@ -305,12 +296,12 @@ def validate_group_fastqs(group_files, demultiplexing_stats, metadata_df, sample
         group_files (dict): group id: file path for each group FASTQ
         demultiplexing_stats (str): file path to demultiplexing stats
         metadata_df (pandas.DataFrame): dataframe of metadata containing group and sample id cols
-        sample_id (str or int): sample id column in metadata_df
+        barcode (str or int): barcode column in metadata_df
         group_id (str or int): group id column in metadata_df
     """
     logging.info("Validating group read counts with sample counts")
     stats = pd.read_table(demultiplexing_stats, index_col=False, usecols=[0, 1], header=0)
-    merged = metadata_df.merge(stats, how="left", left_on=sample_id, right_on="Id")
+    merged = metadata_df.merge(stats, how="left", left_on=barcode, right_on="Id")
     sums = merged.groupby([group_id])["Count"].sum()
     for gid, filepath in group_files.items():
         if not read_count(filepath) == sums[gid]:
