@@ -193,7 +193,7 @@ class FastqMultx(object):
               help="require a minimum phred quality to accept a barcode base")
 @click.option("--stats-file", default=os.devnull,
               help="file to save fastq-multx stdout which contains per barcode read counts")
-def group_demux(r1, table, i1, r2, output_action, out, header, sample_id, group_id, barcode,
+def group_demux(r1, table, i1, r2, output_action, out, header, group_id, barcode,
                 barcode_mismatches, distance, quality, stats_file):
     """Demultiplex FASTQs using `fastq-multx` (`conda install -c bioconda fastq-multx`) into grouped
     FASTQs rather than individual samples. Effectively, this subsets 'Undetermined' into smaller
