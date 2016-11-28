@@ -237,9 +237,9 @@ def group_demux(r1, table, i1, r2, output_action, out, header, sample_id, group_
         cmds = []
         for gid, gdf in metadata.dataframe.groupby([group_id]):
             if output_action == "groupid":
-                r1_result_file = os.path.join(out, "{group}_R1.fastq".format(group=gid))
-                r2_result_file = os.path.join(out, "{group}_R2.fastq".format(group=gid))
-                i1_result_file = os.path.join(out, "{group}_I1.fastq".format(group=gid))
+                r1_result_file = os.path.join(out, '"{group}_R1.fastq"'.format(group=gid))
+                r2_result_file = os.path.join(out, '"{group}_R2.fastq"'.format(group=gid))
+                i1_result_file = os.path.join(out, '"{group}_I1.fastq"'.format(group=gid))
             # "undetermined"
             else:
                 r1_result_file = os.path.join(out, gid, "Undetermined_R1.fastq")
@@ -249,9 +249,9 @@ def group_demux(r1, table, i1, r2, output_action, out, header, sample_id, group_
                     os.makedirs(os.path.join(out, gid))
             group_files[gid] = r1_result_file
             # per sample fastq for r1, r2, and i1
-            r1_fastqs = [os.path.join(td, "%s_R1.fastq" % sample) for sample in gdf[sample_id]]
-            r2_fastqs = [os.path.join(td, "%s_R2.fastq" % sample) for sample in gdf[sample_id]]
-            i1_fastqs = [os.path.join(td, "%s_I1.fastq" % sample) for sample in gdf[sample_id]]
+            r1_fastqs = [os.path.join(td, '"%s_R1.fastq"' % sample) for sample in gdf[sample_id]]
+            r2_fastqs = [os.path.join(td, '"%s_R2.fastq"' % sample) for sample in gdf[sample_id]]
+            i1_fastqs = [os.path.join(td, '"%s_I1.fastq"' % sample) for sample in gdf[sample_id]]
             # per group cat command
             cmds.append("cat {fastqs} > {result}".format(fastqs=" ".join(r1_fastqs),
                                                          result=r1_result_file))
@@ -294,7 +294,7 @@ def read_count(fastq):
     Returns:
         int
     """
-    return int(subprocess.check_output("awk '{n++}END{print n/4}' " + fastq, shell=True).decode())
+    return int(subprocess.check_output("awk '{n++}END{print n/4}' '%s'" % fastq, shell=True).decode())
 
 
 def validate_group_fastqs(group_files, demultiplexing_stats, metadata_df, sample_id, group_id):
