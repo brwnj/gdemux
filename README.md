@@ -63,19 +63,19 @@ out
 
 # Example Metadata
 
-| groupid | sampleid | barcode      |
-|---------|----------|--------------|
-| group1  | McP-F1   | AAGGCGCTCCTT |
-| group1  | McP-F2   | GATCTAATCGAG |
-| group1  | McP-F3   | CTGATGTACACG |
-| group2  | McP-F4   | ACGTATTCGAAG |
-| group2  | CoP-F1   | GACGTTAAGAAT |
-| group2  | CoP-F2   | TGGTGGAGTTTC |
-| group3  | CoP-F3   | TTAACAAGGCAA |
-| group3  | CoP-F4   | AACCGCATAAGT |
-| group3  | McA-F1   | CCACAACGATCA |
-| group3  | McA-F2   | AGTTCTCATTAA |
+| groupid | barcode      |
+|---------|--------------|
+| group1  | AAGGCGCTCCTT |
+| group1  | GATCTAATCGAG |
+| group1  | CTGATGTACACG |
+| group2  | ACGTATTCGAAG |
+| group2  | GACGTTAAGAAT |
+| group2  | TGGTGGAGTTTC |
+| group3  | TTAACAAGGCAA |
+| group3  | AACCGCATAAGT |
+| group3  | CCACAACGATCA |
+| group3  | AGTTCTCATTAA |
 
-Extra columns can exist and differing column names can be used though they will need to be specified on the command line as `--sample-id`, `--group-id`, and `--barcode`.
+Extra columns can exist and differing column names can be used though they will need to be specified on the command line as `--group-id` and `--barcode`.
 
-A header isn't necessary either, though you'll need to specify more options. `--no-header` will be necessary, along with 0-based integers for the 3 columns, e.g. `--no-header --group-id 0 --sample-id 1 --barcode 2`.
+A header isn't necessary either, though you'll need to specify more options. `--no-header` will be necessary, along with 0-based integers for the 3 columns, e.g. `--no-header --group-id 0 --barcode 1`.
