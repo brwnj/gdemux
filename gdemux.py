@@ -21,7 +21,7 @@ class Metadata(object):
             header (boolean): header presence
 
         Notes:
-            Exits if metadata table does not validate, e.g. sample_id header label was not found.
+            Exits if metadata table does not validate, e.g. barcode header label was not found.
         """
         self.table = os.path.abspath(table)
         self.group_id = group_id
@@ -32,8 +32,8 @@ class Metadata(object):
             table=table))
 
     def validate_table(self, header):
-        """Validates input metadata table and verifies that sample_id, group_id, and barcode
-        exist within the table.
+        """Validates input metadata table and verifies that group_id and barcode exist within the
+        table.
 
         Args:
             header (boolean): header presence in metadata table
@@ -123,7 +123,7 @@ class FastqMultx(object):
         out_files = []
         with open(self.barcodes, 'rU') as fh:
             for line in fh:
-                # sample name\tbarcode
+                # barcode\tbarcode
                 toks = line.strip().split("\t")
                 if len(toks) < 2:
                     raise OSError(errno.ENOENT, "Invalid barcodes file; expects <ID>\\t<seq>", r1)
@@ -240,9 +240,9 @@ def group_demux(r1, table, i1, r2, output_action, out, header, group_id, barcode
                     os.makedirs(os.path.join(out, gid))
             group_files[gid] = r1_result_file
             # per sample fastq for r1, r2, and i1
-            r1_fastqs = [os.path.join(td, '"%s_R1.fastq"' % sample) for sample in gdf[sample_id]]
-            r2_fastqs = [os.path.join(td, '"%s_R2.fastq"' % sample) for sample in gdf[sample_id]]
-            i1_fastqs = [os.path.join(td, '"%s_I1.fastq"' % sample) for sample in gdf[sample_id]]
+            r1_fastqs = [os.path.join(td, '"%s_R1.fastq"' % bc) for bc in gdf[barcode]]
+            r2_fastqs = [os.path.join(td, '"%s_R2.fastq"' % bc) for bc in gdf[barcode]]
+            i1_fastqs = [os.path.join(td, '"%s_I1.fastq"' % bc) for bc in gdf[barcode]]
             # per group cat command
             cmds.append("cat {fastqs} > {result}".format(fastqs=" ".join(r1_fastqs),
                                                          result=r1_result_file))
@@ -259,7 +259,7 @@ def group_demux(r1, table, i1, r2, output_action, out, header, group_id, barcode
                 if p.returncode != 0:
                     logging.warning("Joining the reads failed")
         # validate the group FASTQs
-        validate_group_fastqs(group_files, fmultx.stats_file, metadata.dataframe, sample_id,
+        validate_group_fastqs(group_files, fmultx.stats_file, metadata.dataframe, barcode,
                               group_id)
     logging.info("Processing complete")
 
@@ -295,7 +295,7 @@ def validate_group_fastqs(group_files, demultiplexing_stats, metadata_df, barcod
     Args:
         group_files (dict): group id: file path for each group FASTQ
         demultiplexing_stats (str): file path to demultiplexing stats
-        metadata_df (pandas.DataFrame): dataframe of metadata containing group and sample id cols
+        metadata_df (pandas.DataFrame): dataframe of metadata containing group and barcode cols
         barcode (str or int): barcode column in metadata_df
         group_id (str or int): group id column in metadata_df
     """
